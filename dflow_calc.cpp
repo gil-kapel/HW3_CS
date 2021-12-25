@@ -4,6 +4,7 @@
 #include "dflow_calc.h"
 #include <vector>
 using namespace std;
+int cmd_count = 0;
 
 class Node{
     int cmd_num;
@@ -12,7 +13,11 @@ class Node{
     Node* left_dep;
     Node* right_dep;
 public:
-    Node();
+    Node(int opLatency, InstInfo progTrace, Node* left_dep = nullptr, Node* right_dep = nullptr): opsLatency(opLatency), progTrace(progTrace), left_dep(left_dep), right_dep(right_dep){
+        cmd_num = cmd_count;
+        cmd_count++;
+    }
+    ~Node() = default;
 };
 
 class ProgCtx{
@@ -20,10 +25,12 @@ class ProgCtx{
     unsigned int numOfInsts;
 public:
     ProgCtx();
-    ~ProgCtx();
+    ~ProgCtx() = default;
 };
 
 ProgCtx analyzeProg(const unsigned int opsLatency[], const InstInfo progTrace[], unsigned int numOfInsts){
+    ProgCtx ctx;
+    for (int i = 0; i < numOfInsts; i++){}
     return PROG_CTX_NULL;
 }
 
