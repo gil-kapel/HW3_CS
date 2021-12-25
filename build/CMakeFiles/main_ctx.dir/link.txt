@@ -1,0 +1,3 @@
+"C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -E rm -f CMakeFiles\main_ctx.dir/objects.a
+C:\TDM-GCC-64\bin\ar.exe qc CMakeFiles\main_ctx.dir/objects.a @CMakeFiles\main_ctx.dir\objects1.rsp
+g++ -std=c++11  -g -Wl,--whole-archive CMakeFiles\main_ctx.dir/objects.a -Wl,--no-whole-archive -o main_ctx.exe -Wl,--out-implib,libmain_ctx.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\main_ctx.dir\linklibs.rsp

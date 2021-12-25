@@ -1,0 +1,12 @@
+[
+{
+  "directory": "D:/Limud/Third_year/Computer_structure/HW3/build",
+  "command": "gcc   -std=c99  -g -o CMakeFiles\\main_ctx.dir\\dflow_main.c.obj -c D:\\Limud\\Third_year\\Computer_structure\\HW3\\dflow_main.c",
+  "file": "D:/Limud/Third_year/Computer_structure/HW3/dflow_main.c"
+},
+{
+  "directory": "D:/Limud/Third_year/Computer_structure/HW3/build",
+  "command": "g++   -std=c++11  -g -o CMakeFiles\\main_ctx.dir\\dflow_calc.cpp.obj -c D:\\Limud\\Third_year\\Computer_structure\\HW3\\dflow_calc.cpp",
+  "file": "D:/Limud/Third_year/Computer_structure/HW3/dflow_calc.cpp"
+}
+]

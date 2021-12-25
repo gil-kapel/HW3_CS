@@ -1,0 +1,3 @@
+D:/Limud/Third_year/Computer_structure/HW3/build/CMakeFiles/main_ctx.dir
+D:/Limud/Third_year/Computer_structure/HW3/build/CMakeFiles/edit_cache.dir
+D:/Limud/Third_year/Computer_structure/HW3/build/CMakeFiles/rebuild_cache.dir
