@@ -14,6 +14,7 @@ public:
     Node(InstInfo progTrace, int opLatency = 0, Node* left_dep = nullptr, Node* right_dep = nullptr): 
         opsLatency(opLatency), progTrace(progTrace), left_dep(left_dep), right_dep(right_dep){}
     ~Node() = default;
+    friend int getMaxPathAux (Graph ctx, unsigned int inst, int max_path);
 };
 
 class Graph{
@@ -53,6 +54,8 @@ public:
     ~Graph() = default;
     bool findDstInCtx(int index){ return true; } // implementation
     int getDstIndex(int dst_index){ return 0; }  // implementation
+    friend int getMaxPathAux (Graph ctx, unsigned int inst, int max_path);
+
 };
 
 ProgCtx analyzeProg(const unsigned int opsLatency[], const InstInfo progTrace[], unsigned int numOfInsts){
@@ -64,7 +67,24 @@ ProgCtx analyzeProg(const unsigned int opsLatency[], const InstInfo progTrace[],
 void freeProgCtx(ProgCtx ctx) {
 }
 
+int getMaxPathAux (Graph* ctx, unsigned int inst, int max_path, int current_path){
+    if (ctx->graph[inst].left_dep == nullptr && ctx->graph[inst].left_dep == nullptr){
+        if (current_path > max_path) return current_path;
+        else return max_path;
+    }
+    if (ctx->graph[inst].left_dep != nullptr){
+        max_path= getMaxPathAux (ctx, findDstInCtx(ctx->graph[inst].left_dep->progTrace.dstIdx), max_path, current_path + 1);
+    }
+    if (ctx->graph[inst].right_dep != nullptr){
+        max_path= getMaxPathAux (ctx, findDstInCtx(ctx->graph[inst].right_dep->progTrace.dstIdx), max_path, current_path + 1);
+    }
+    return max_path;
+}
+
+
 int getInstDepth(ProgCtx ctx, unsigned int theInst) {
+    int max_path = 0;
+    max_path= getMaxPathAux((Graph*)ctx, theInst, max_path, 0);
     return -1;
 }
 
