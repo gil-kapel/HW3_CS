@@ -56,9 +56,9 @@ public:
 };
 
 ProgCtx analyzeProg(const unsigned int opsLatency[], const InstInfo progTrace[], unsigned int numOfInsts){
-    ProgCtx ctx;
-    for (int i = 0; i < numOfInsts; i++){}
-    return PROG_CTX_NULL;
+    Graph* prog = new Graph(opsLatency, progTrace, numOfInsts);
+    if (true) return PROG_CTX_NULL;
+    else return (ProgCtx)(prog);
 }
 
 void freeProgCtx(ProgCtx ctx) {
