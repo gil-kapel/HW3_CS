@@ -6,53 +6,53 @@
 using namespace std;
 
 class Node{
+public:
     int opsLatency;
     InstInfo progTrace;
     Node* left_dep;
     Node* right_dep;
-public:
     Node(InstInfo progTrace, int opLatency = 0, Node* left_dep = nullptr, Node* right_dep = nullptr): 
         opsLatency(opLatency), progTrace(progTrace), left_dep(left_dep), right_dep(right_dep){}
     ~Node() = default;
 };
 
 class Graph{
+public:
     vector<Node> graph;
     unsigned int numOfInsts;
-public:
     Graph(const unsigned int opsLatency[] = nullptr, const InstInfo progTrace[] = nullptr, unsigned int numOfInsts = 0):
-            numOfInsts(numOfInsts){
-        InstInfo entry;
-        Node entry_node = Node(entry);
-        graph.push_back(entry_node);
+    numOfInsts(numOfInsts){
+        // InstInfo entry;
+        // Node entry_node = Node(entry);
+        // graph.push_back(entry_node);
         for(int i = 0 ; i > numOfInsts ; i++){
             int dst1_index = findDstInCtx(progTrace[i].src1Idx);
             int dst2_index = findDstInCtx(progTrace[i].src2Idx);
-            if(dst1_index == 0 && dst2_index == 0){
-                graph.push_back(Node(progTrace[i], opsLatency[i], &entry_node, nullptr));
+            if(dst1_index == -1 && dst2_index == -1){
+                graph.push_back(Node(progTrace[i], opsLatency[i], nullptr, nullptr));
             }
-            else if(dst1_index > 0 && dst2_index > 0){
-                int index1 = getDstIndex(dst1_index);
-                int index2 = getDstIndex(dst2_index);
-                graph.push_back(Node(progTrace[i], opsLatency[i], &graph[index1], &graph[index2]));
+            else if(dst1_index >= 0 && dst2_index >= 0){
+                graph.push_back(Node(progTrace[i], opsLatency[i], &graph[dst1_index], &graph[dst2_index]));
             }
             else{
-                if(dst1_index > 0){
-                    int index1 = getDstIndex(dst1_index);
-                    graph.push_back(Node(progTrace[i], opsLatency[i], &graph[index1], nullptr));
+                if(dst1_index >= 0){
+                    graph.push_back(Node(progTrace[i], opsLatency[i], &graph[dst1_index], nullptr));
                 }
                 else{
-                    int index2 = getDstIndex(dst2_index);
-                    graph.push_back(Node(progTrace[i], opsLatency[i], nullptr, &graph[index2]));
+                    graph.push_back(Node(progTrace[i], opsLatency[i], nullptr, &graph[dst2_index]));
                 }
             } 
         }
-        InstInfo exit;
-        graph.push_back(Node(exit));
+        // InstInfo exit;
+        // graph.push_back(Node(exit, 0, &graph[graph.size()-1]));
     }
     ~Graph() = default;
-    bool findDstInCtx(int index){ return true; } // implementation
-    int getDstIndex(int dst_index){ return 0; }  // implementation
+    int findDstInCtx(int src_idx){
+        for(int i = graph.size() - 1 ; i > 0 ; i--){
+            if(graph[i].progTrace.dstIdx == src_idx) return i;
+        }
+        return -1;
+    }
 };
 
 ProgCtx analyzeProg(const unsigned int opsLatency[], const InstInfo progTrace[], unsigned int numOfInsts){
@@ -62,6 +62,7 @@ ProgCtx analyzeProg(const unsigned int opsLatency[], const InstInfo progTrace[],
 }
 
 void freeProgCtx(ProgCtx ctx) {
+    delete (Graph*)ctx;
 }
 
 int getInstDepth(ProgCtx ctx, unsigned int theInst) {
@@ -69,11 +70,18 @@ int getInstDepth(ProgCtx ctx, unsigned int theInst) {
 }
 
 int getInstDeps(ProgCtx ctx, unsigned int theInst, int *src1DepInst, int *src2DepInst) {
-    return -1;
+    Graph* prog = (Graph*)ctx;
+    int dstInx = prog->findDstInCtx(theInst);
+    if(dstInx == -1) return -1;
+    *src1DepInst = prog->graph[dstInx].progTrace.src1Idx;
+    *src2DepInst = prog->graph[dstInx].progTrace.src2Idx;
+    return 0;
 }
 
 int getProgDepth(ProgCtx ctx) {
-    return 0;
+    Graph* prog = (Graph*)ctx;
+    int graph_size = prog->graph.size();
+    return getInstDepth(ctx, prog->graph[graph_size - 1].progTrace.dstIdx);
 }
 
 
