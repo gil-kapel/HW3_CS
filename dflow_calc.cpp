@@ -4,6 +4,7 @@
 #include "dflow_calc.h"
 #include <vector>
 using namespace std;
+#include <iostream>
 
 class Node{
 public:
@@ -14,7 +15,6 @@ public:
     Node(InstInfo progTrace, int opLatency = 0, Node* left_dep = nullptr, Node* right_dep = nullptr): 
         opsLatency(opLatency), progTrace(progTrace), left_dep(left_dep), right_dep(right_dep){}
     ~Node() = default;
-    friend int getMaxPathAux (Graph ctx, unsigned int inst, int max_path);
 };
 
 class Graph{
@@ -26,11 +26,13 @@ public:
         // InstInfo entry;
         // Node entry_node = Node(entry);
         // graph.push_back(entry_node);
-        for(int i = 0 ; i > numOfInsts ; i++){
+
+        for(int i = 0 ; i < numOfInsts ; i++){
             int dst1_index = findDstInCtx(progTrace[i].src1Idx);
             int dst2_index = findDstInCtx(progTrace[i].src2Idx);
             if(dst1_index == -1 && dst2_index == -1){
                 graph.push_back(Node(progTrace[i], opsLatency[i], nullptr, nullptr));
+
             }
             else if(dst1_index >= 0 && dst2_index >= 0){
                 graph.push_back(Node(progTrace[i], opsLatency[i], &graph[dst1_index], &graph[dst2_index]));
@@ -54,13 +56,12 @@ public:
         }
         return -1;
     }
-    friend int getMaxPathAux (Graph* ctx, unsigned int inst, int max_path, int current_path);
 };
 
 ProgCtx analyzeProg(const unsigned int opsLatency[], const InstInfo progTrace[], unsigned int numOfInsts){
+    if (opsLatency == nullptr || progTrace == nullptr || numOfInsts <= 0) return PROG_CTX_NULL;
     Graph* prog = new Graph(opsLatency, progTrace, numOfInsts);
-    if (true) return PROG_CTX_NULL;
-    else return (ProgCtx)(prog);
+    return (ProgCtx)(prog);
 }
 
 void freeProgCtx(ProgCtx ctx) {
@@ -96,7 +97,6 @@ int getInstDeps(ProgCtx ctx, unsigned int theInst, int *src1DepInst, int *src2De
     *src2DepInst = prog->graph[dstInx].progTrace.src2Idx;
     return 0;
 }
-
 int getProgDepth(ProgCtx ctx) {
     Graph* prog = (Graph*)ctx;
     int graph_size = prog->graph.size();
