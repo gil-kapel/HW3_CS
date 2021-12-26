@@ -54,6 +54,7 @@ public:
         }
         return -1;
     }
+    friend int getMaxPathAux (Graph* ctx, unsigned int inst, int max_path, int current_path);
 };
 
 ProgCtx analyzeProg(const unsigned int opsLatency[], const InstInfo progTrace[], unsigned int numOfInsts){
@@ -72,10 +73,10 @@ int getMaxPathAux (Graph* ctx, unsigned int inst, int max_path, int current_path
         else return max_path;
     }
     if (ctx->graph[inst].left_dep != nullptr){
-        max_path= getMaxPathAux (ctx, findDstInCtx(ctx->graph[inst].left_dep->progTrace.dstIdx), max_path, current_path + 1);
+        max_path= getMaxPathAux (ctx, ctx->findDstInCtx(ctx->graph[inst].left_dep->progTrace.dstIdx), max_path, current_path + ctx->graph[inst].left_dep->opsLatency);
     }
     if (ctx->graph[inst].right_dep != nullptr){
-        max_path= getMaxPathAux (ctx, findDstInCtx(ctx->graph[inst].right_dep->progTrace.dstIdx), max_path, current_path + 1);
+        max_path= getMaxPathAux (ctx, ctx->findDstInCtx(ctx->graph[inst].right_dep->progTrace.dstIdx), max_path, current_path + ctx->graph[inst].right_dep->opsLatency);
     }
     return max_path;
 }
@@ -84,7 +85,7 @@ int getMaxPathAux (Graph* ctx, unsigned int inst, int max_path, int current_path
 int getInstDepth(ProgCtx ctx, unsigned int theInst) {
     int max_path = 0;
     max_path= getMaxPathAux((Graph*)ctx, theInst, max_path, 0);
-    return -1;
+    return max_path;
 }
 
 int getInstDeps(ProgCtx ctx, unsigned int theInst, int *src1DepInst, int *src2DepInst) {
