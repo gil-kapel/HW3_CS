@@ -8,6 +8,16 @@ using namespace std;
 
 int instCount = 0;
 
+
+/**
+ * Node Class: represents an instruction in the dependancies graph.
+ * @arg opsLatency- the instruction's operation latency.
+ * @arg progTrace- the instrucion info.
+ * @arg left_dep- a pointer to a previous instruction, which the current instrucion depends on.
+ * @arg right_dep- a pointer to a previous instruction, which the current instrucion depends on.
+ * @arg instNum- the instruction number.
+ * @arg longestpath- the greatest latency untill the current instruction can starts to run.
+ * */
 class Node{
 public:
     int opsLatency;
@@ -34,16 +44,19 @@ public:
     ~Node() = default;
 };
 
+/**
+ * Graph Class: represents dependancies graph.
+ * @arg graph- vector of the instructions which represented in the dependencies graph.
+ * @arg numOfInsts- vector size.
+  * */
 class Graph{
 public:
     vector<Node> graph;
     unsigned int numOfInsts;
     Graph(const unsigned int opsLatency[] = nullptr, const InstInfo progTrace[] = nullptr, unsigned int numOfInsts = 0):
     numOfInsts(numOfInsts){
-        // InstInfo entry;
-        // Node entry_node = Node(entry);
-        // graph.push_back(entry_node);
         graph.reserve(numOfInsts);
+        //insert the instructions to the vector
         for(unsigned int i = 0 ; i < numOfInsts ; i++){
             int dst1_index = findDstInCtx(progTrace[i].src1Idx);
             int dst2_index = findDstInCtx(progTrace[i].src2Idx);
@@ -64,6 +77,7 @@ public:
         }
     }
     ~Graph() = default;
+    //helping function for finding src_idx dependency's nodes.
     int findDstInCtx(int src_idx){
         int graph_size = graph.size() - 1; 
         for(int i = graph_size; i >= 0 ; i--){
