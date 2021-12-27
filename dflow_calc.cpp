@@ -5,6 +5,7 @@
 #include <vector>
 using namespace std;
 #include <iostream>
+
 int instCount = 0;
 
 class Node{
@@ -31,13 +32,12 @@ public:
         // InstInfo entry;
         // Node entry_node = Node(entry);
         // graph.push_back(entry_node);
-
+        graph.reserve(numOfInsts);
         for(int i = 0 ; i < numOfInsts ; i++){
             int dst1_index = findDstInCtx(progTrace[i].src1Idx);
             int dst2_index = findDstInCtx(progTrace[i].src2Idx);
             if(dst1_index == -1 && dst2_index == -1){
                 graph.push_back(Node(progTrace[i], opsLatency[progTrace[i].opcode], nullptr, nullptr));
-
             }
             else if(dst1_index >= 0 && dst2_index >= 0){
                 graph.push_back(Node(progTrace[i], opsLatency[progTrace[i].opcode], &graph[dst1_index], &graph[dst2_index]));
@@ -75,8 +75,8 @@ void freeProgCtx(ProgCtx ctx) {
 }
 
 int getMaxPathAux (Graph* ctx, unsigned int inst, int max_path, int current_path){
-    if (ctx->graph[inst].left_dep == nullptr && ctx->graph[inst].left_dep == nullptr){
-        if (current_path > max_path) return current_path + ctx->graph[inst].opsLatency;
+    if(ctx->graph[inst].left_dep == nullptr && ctx->graph[inst].right_dep == nullptr){
+        if (current_path > max_path) return current_path;
         else return max_path;
     }
     if (ctx->graph[inst].left_dep != nullptr){
@@ -91,7 +91,9 @@ int getMaxPathAux (Graph* ctx, unsigned int inst, int max_path, int current_path
 
 int getInstDepth(ProgCtx ctx, unsigned int theInst) {
     int max_path = 0;
-    max_path = getMaxPathAux((Graph*)ctx, theInst, max_path, 0);
+    Graph* prog = (Graph*)ctx;
+    if (prog->graph[theInst].left_dep == nullptr && prog->graph[theInst].right_dep == nullptr) return 0;
+    max_path = getMaxPathAux(prog, theInst, max_path, 0);
     return max_path;
 }
 
