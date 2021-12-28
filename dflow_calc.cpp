@@ -15,10 +15,21 @@ public:
     Node* left_dep;
     Node* right_dep;
     int instNum;
+    int longestpath = 0;
     Node(InstInfo progTrace, int opLatency = 0, Node* left_dep = nullptr, Node* right_dep = nullptr): 
         opsLatency(opLatency), progTrace(progTrace), left_dep(left_dep), right_dep(right_dep){
             instNum = instCount;
             instCount++;
+            if(right_dep && left_dep){
+                longestpath += max(left_dep->longestpath + left_dep->opsLatency, right_dep->longestpath + right_dep->opsLatency);
+            }
+            else if (right_dep){
+                longestpath += right_dep->longestpath + right_dep->opsLatency;
+            }
+            else if(left_dep){
+                longestpath += left_dep->longestpath + left_dep->opsLatency;
+            }
+            else longestpath = 0;
         }
     ~Node() = default;
 };
@@ -33,7 +44,7 @@ public:
         // Node entry_node = Node(entry);
         // graph.push_back(entry_node);
         graph.reserve(numOfInsts);
-        for(int i = 0 ; i < numOfInsts ; i++){
+        for(unsigned int i = 0 ; i < numOfInsts ; i++){
             int dst1_index = findDstInCtx(progTrace[i].src1Idx);
             int dst2_index = findDstInCtx(progTrace[i].src2Idx);
             if(dst1_index == -1 && dst2_index == -1){
@@ -90,11 +101,11 @@ int getMaxPathAux (Graph* ctx, unsigned int inst, int max_path, int current_path
 
 
 int getInstDepth(ProgCtx ctx, unsigned int theInst) {
-    int max_path = 0;
+    // int max_path = 0;
     Graph* prog = (Graph*)ctx;
-    if (prog->graph[theInst].left_dep == nullptr && prog->graph[theInst].right_dep == nullptr) return 0;
-    max_path = getMaxPathAux(prog, theInst, max_path, 0);
-    return max_path;
+    // if (prog->graph[theInst].left_dep == nullptr && prog->graph[theInst].right_dep == nullptr) return 0;
+    // max_path = getMaxPathAux(prog, theInst, max_path, 0);
+    return prog->graph[theInst].longestpath;
 }
 
 int findDstInFinalCtx(Graph* prog, int src_idx){
@@ -106,26 +117,40 @@ int findDstInFinalCtx(Graph* prog, int src_idx){
 }
 
 int getInstDeps(ProgCtx ctx, unsigned int theInst, int *src1DepInst, int *src2DepInst) {
-    if(theInst == -1) return -1;
     Graph* prog = (Graph*)ctx;
-    int src1 = findDstInFinalCtx(prog, prog->graph[theInst].progTrace.src1Idx);
-    int src2 = findDstInFinalCtx(prog, prog->graph[theInst].progTrace.src2Idx);
-    if(src1 >= 0){
-        *src1DepInst = prog->graph[src1].instNum;
+    // int src1 = findDstInFinalCtx(prog, prog->graph[theInst].progTrace.src1Idx);
+    // int src2 = findDstInFinalCtx(prog, prog->graph[theInst].progTrace.src2Idx);
+    // if(src1 >= 0){
+    //     *src1DepInst = prog->graph[src1].instNum;
+    // }
+    // else *src1DepInst = src1;
+    // if(src2 >= 0){
+    //     *src2DepInst = prog->graph[src2].instNum;
+    // }
+    // else *src2DepInst = src2;
+    if(prog->graph[theInst].left_dep){
+        *src1DepInst = prog->graph[theInst].left_dep->instNum;
     }
-    else *src1DepInst = src1;
-    if(src2 >= 0){
-        *src2DepInst = prog->graph[src2].instNum;
+    else *src1DepInst = -1;
+    if(prog->graph[theInst].right_dep){
+        *src2DepInst = prog->graph[theInst].right_dep->instNum;
     }
-    else *src2DepInst = src2;
-
+    else *src2DepInst = -1;
     return 0;
 }
 
 int getProgDepth(ProgCtx ctx) {
     Graph* prog = (Graph*)ctx;
-    int graph_size = prog->graph.size() - 1;
-    return getInstDepth(ctx, graph_size) + prog->graph[graph_size].opsLatency;
+    int graph_size = prog->graph.size();
+    int max = 0;
+    int index = 0;
+    for(int i = 0 ; i < graph_size ; i++){
+        if(max <= prog->graph[i].longestpath + prog->graph[i].opsLatency){
+            max = prog->graph[i].longestpath + prog->graph[i].opsLatency;
+            index = i;
+        }
+    }
+    return prog->graph[index].longestpath + prog->graph[index].opsLatency;
 }
 
 
